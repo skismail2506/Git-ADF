@@ -21,6 +21,62 @@
 	},
 	"resources": [
 		{
+			"name": "[concat(parameters('factoryName'), '/pl_EmployeeSalesDetails')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_EmployeeSalesDetails",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_EmployeeSalesDetails",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceEmployee": {},
+									"sourceDepartment": {},
+									"sourceRegion": {},
+									"sourceSalesEAA": {},
+									"sourceSalesNA": {},
+									"sourceSalesSA": {},
+									"sinkTotalYearSlaes": {},
+									"sinkNASalescsv": {},
+									"sinkSASalescsv": {},
+									"sinkEAASalescsv": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Mapping DF pipelines"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-12T22:37:52Z"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('factoryName'), '/DS_MyPC')]",
 			"type": "Microsoft.DataFactory/factories/datasets",
 			"apiVersion": "2018-06-01",
