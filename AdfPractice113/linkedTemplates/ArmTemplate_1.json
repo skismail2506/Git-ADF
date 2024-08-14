@@ -1,0 +1,626 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "AdfPractice113"
+		},
+		"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pRelativeGitURL": {
+			"type": "string",
+			"defaultValue": "/skismail2506/sample_adf/raw/main/Department.csv"
+		},
+		"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pFileName": {
+			"type": "string",
+			"defaultValue": "Department.csv"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_MyPC')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_MyPC_FileServer",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Self IR"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "FileServerLocation",
+						"fileName": "customer.txt"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_Customer copy raw to processed')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Mapping DF"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_RawCustomer",
+								"type": "DatasetReference"
+							},
+							"name": "sourceRawCustomer"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Processed",
+								"type": "DatasetReference"
+							},
+							"name": "sinkProcessedCustomer"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          customer_id as string,",
+						"          Customerslastname as string,",
+						"          Customersfirstname as string,",
+						"          CustomersCountry as string,",
+						"          Customersage as string,",
+						"          Customersgender as string,",
+						"          Customersemail as string,",
+						"          Customersprofession as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceRawCustomer",
+						"sourceRawCustomer sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['ProcessedCustomer.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProcessedCustomer"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_PaymentsDetails')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Mapping DF"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_RawCustomer",
+								"type": "DatasetReference"
+							},
+							"name": "sourceCustomers"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_RawPayments",
+								"type": "DatasetReference"
+							},
+							"name": "sourcePayments"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_RawOrders",
+								"type": "DatasetReference"
+							},
+							"name": "sourceOrders"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Processed",
+								"type": "DatasetReference"
+							},
+							"name": "sinkPaymentDetails"
+						}
+					],
+					"transformations": [
+						{
+							"name": "filterCustomerAge"
+						},
+						{
+							"name": "filterOnlyNonErrorData"
+						},
+						{
+							"name": "selectRelevantOrderData"
+						},
+						{
+							"name": "selectRelevantCustomersData"
+						},
+						{
+							"name": "selectRelevantPaymentsData"
+						},
+						{
+							"name": "joinCustomersOrders"
+						},
+						{
+							"name": "joinCustomersOrdersPayments"
+						},
+						{
+							"name": "selectPaymentDetails"
+						},
+						{
+							"name": "pivotDueAmount"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     pMaxAge as integer,",
+						"     pMinAge as integer",
+						"}",
+						"source(output(",
+						"          customer_id as string,",
+						"          Customerslastname as string,",
+						"          Customersfirstname as string,",
+						"          CustomersCountry as string,",
+						"          Customersage as short,",
+						"          Customersgender as string,",
+						"          Customersemail as string,",
+						"          Customersprofession as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceCustomers",
+						"source(output(",
+						"          order_id as string,",
+						"          payment_id as string,",
+						"          type as string,",
+						"          descriptions as string,",
+						"          pDate as date 'DD/mm/yyyy',",
+						"          Status as string,",
+						"          Details as string,",
+						"          Total_Invoice as short,",
+						"          Due_Amount as double",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcePayments",
+						"source(output(",
+						"          order_id as string,",
+						"          customer_id as string,",
+						"          Store_id as string,",
+						"          Date as date 'DD/mm/yyyy'",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceOrders",
+						"sourceCustomers filter(Customersage >= $pMinAge && Customersage <= $pMaxAge) ~> filterCustomerAge",
+						"sourcePayments filter(Status != 'error' && (not(equals(Status, 'refunded')))) ~> filterOnlyNonErrorData",
+						"sourceOrders select(mapColumn(",
+						"          order_id,",
+						"          customer_id,",
+						"          Date",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantOrderData",
+						"filterCustomerAge select(mapColumn(",
+						"          customer_id,",
+						"          Customers_First_Name = Customersfirstname,",
+						"          Customers_Last_Name = Customerslastname,",
+						"          Customers_Country = CustomersCountry,",
+						"          Customers_Age = Customersage",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantCustomersData",
+						"filterOnlyNonErrorData select(mapColumn(",
+						"          order_id,",
+						"          payment_id,",
+						"          Status,",
+						"          Total_Invoice,",
+						"          Due_Amount",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantPaymentsData",
+						"selectRelevantOrderData, selectRelevantCustomersData join(selectRelevantOrderData@customer_id == selectRelevantCustomersData@customer_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinCustomersOrders",
+						"joinCustomersOrders, selectRelevantPaymentsData join(selectRelevantOrderData@order_id == selectRelevantPaymentsData@order_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinCustomersOrdersPayments",
+						"joinCustomersOrdersPayments select(mapColumn(",
+						"          customer_id = selectRelevantOrderData@customer_id,",
+						"          Date,",
+						"          Customers_First_Name,",
+						"          Customers_Last_Name,",
+						"          Customers_Country,",
+						"          Customers_Age,",
+						"          Status,",
+						"          Total_Invoice,",
+						"          Due_Amount",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectPaymentDetails",
+						"selectPaymentDetails pivot(groupBy(customer_id,",
+						"          Date,",
+						"          Customers_First_Name,",
+						"          Customers_Last_Name,",
+						"          Customers_Country,",
+						"          Customers_Age,",
+						"          Status,",
+						"          Total_Invoice),",
+						"     pivotBy(Status, ['received', 'not received']),",
+						"     Due_Amount_ = sum(Due_Amount),",
+						"     columnNaming: '$N$V',",
+						"     lateral: true) ~> pivotDueAmount",
+						"pivotDueAmount sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['PaymentDetails.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          customer_id,",
+						"          Date,",
+						"          Customers_First_Name,",
+						"          Customers_Last_Name,",
+						"          Customers_Country,",
+						"          Customers_Age,",
+						"          Total_Invoice,",
+						"          Due_Amount_received,",
+						"          {Due_Amount_not received}",
+						"     ),",
+						"     partitionBy('hash', 1)) ~> sinkPaymentDetails"
+					]
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/Copy SQL Table to PC')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "FileServerWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "id",
+											"type": "Int32",
+											"physicalType": "int"
+										},
+										"sink": {
+											"name": "id",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "name",
+											"type": "String",
+											"physicalType": "varchar"
+										},
+										"sink": {
+											"name": "name",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "address",
+											"type": "String",
+											"physicalType": "varchar"
+										},
+										"sink": {
+											"name": "address",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_AzureSqlTable_dbPractice",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_MyPC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT * FROM [dbo].[tblTableName]",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_AzureSqlTable_dbPractice",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Self IR"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-12T16:33:18Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_MyPC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_Copy blob using data flows')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Raw to Processed",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Customer copy raw to processed",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceRawCustomer": {},
+									"sinkProcessedCustomer": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Mapping DF pipelines"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-12T17:00:55Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_Customer copy raw to processed')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_PaymentDetails')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow Payment Details",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_PaymentsDetails",
+								"type": "DataFlowReference",
+								"parameters": {
+									"pMaxAge": {
+										"value": "@pipeline().parameters.maxAge",
+										"type": "Expression"
+									},
+									"pMinAge": {
+										"value": "@pipeline().parameters.minAge",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"sourceCustomers": {},
+									"sourcePayments": {},
+									"sourceOrders": {},
+									"sinkPaymentDetails": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"minAge": {
+						"type": "string"
+					},
+					"maxAge": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Mapping DF pipelines"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-12T20:37:55Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_PaymentsDetails')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tr_CopyAllFiles2DL')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "PL_CopyFilesFrmGitForeach",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 5,
+						"startTime": "2024-08-14T02:38:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tr_CopyFile2dl')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "CopyOneFIle_usingPipelineParameters",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"pRelativeGitURL": "[parameters('tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pRelativeGitURL')]",
+							"pFileName": "[parameters('tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pFileName')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2024-08-14T01:40:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": []
+		}
+	]
+}

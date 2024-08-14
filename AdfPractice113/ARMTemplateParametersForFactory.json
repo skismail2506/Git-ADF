@@ -1,0 +1,48 @@
+{
+	"$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"value": "AdfPractice113"
+		},
+		"LS_AzureSqlDatabase_password": {
+			"value": ""
+		},
+		"LS_MyPC_FileServer_password": {
+			"value": ""
+		},
+		"LS_blob_sampledata_connectionString": {
+			"value": ""
+		},
+		"LS_datalake4gitdata_accountKey": {
+			"value": ""
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_server": {
+			"value": "serverpractice113.database.windows.net"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_database": {
+			"value": "db_practice"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_userName": {
+			"value": "sqladmin"
+		},
+		"LS_MyPC_FileServer_properties_typeProperties_host": {
+			"value": "E:\\Azure Practice Udemy\\SQL_Data_SelfIR"
+		},
+		"LS_MyPC_FileServer_properties_typeProperties_userId": {
+			"value": "Ismail"
+		},
+		"LS_datalake4gitdata_properties_typeProperties_url": {
+			"value": "https://datalake4gitdata.dfs.core.windows.net/"
+		},
+		"LS_https_gitData_properties_typeProperties_url": {
+			"value": "https://github.com"
+		},
+		"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pRelativeGitURL": {
+			"value": "/skismail2506/sample_adf/raw/main/Department.csv"
+		},
+		"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pFileName": {
+			"value": "Department.csv"
+		}
+	}
+}

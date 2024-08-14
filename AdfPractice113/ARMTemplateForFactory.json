@@ -1,0 +1,1934 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "AdfPractice113"
+		},
+		"LS_AzureSqlDatabase_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_AzureSqlDatabase'"
+		},
+		"LS_MyPC_FileServer_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_MyPC_FileServer'"
+		},
+		"LS_blob_sampledata_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_blob_sampledata'"
+		},
+		"LS_datalake4gitdata_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'LS_datalake4gitdata'"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "serverpractice113.database.windows.net"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "db_practice"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sqladmin"
+		},
+		"LS_MyPC_FileServer_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "E:\\Azure Practice Udemy\\SQL_Data_SelfIR"
+		},
+		"LS_MyPC_FileServer_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "Ismail"
+		},
+		"LS_datalake4gitdata_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://datalake4gitdata.dfs.core.windows.net/"
+		},
+		"LS_https_gitData_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://github.com"
+		},
+		"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pRelativeGitURL": {
+			"type": "string",
+			"defaultValue": "/skismail2506/sample_adf/raw/main/Department.csv"
+		},
+		"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pFileName": {
+			"type": "string",
+			"defaultValue": "Department.csv"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "[concat(parameters('factoryName'), '/Copy SQL Table to PC')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data1",
+						"type": "Copy",
+						"dependsOn": [
+							{
+								"activity": "Lookup1",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "FileServerWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"mappings": [
+									{
+										"source": {
+											"name": "id",
+											"type": "Int32",
+											"physicalType": "int"
+										},
+										"sink": {
+											"name": "id",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "name",
+											"type": "String",
+											"physicalType": "varchar"
+										},
+										"sink": {
+											"name": "name",
+											"type": "String",
+											"physicalType": "String"
+										}
+									},
+									{
+										"source": {
+											"name": "address",
+											"type": "String",
+											"physicalType": "varchar"
+										},
+										"sink": {
+											"name": "address",
+											"type": "String",
+											"physicalType": "String"
+										}
+									}
+								],
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "DS_AzureSqlTable_dbPractice",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "DS_MyPC",
+								"type": "DatasetReference",
+								"parameters": {}
+							}
+						]
+					},
+					{
+						"name": "Lookup1",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "AzureSqlSource",
+								"sqlReaderQuery": "SELECT * FROM [dbo].[tblTableName]",
+								"queryTimeout": "02:00:00",
+								"partitionOption": "None"
+							},
+							"dataset": {
+								"referenceName": "DS_AzureSqlTable_dbPractice",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": true
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Self IR"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-12T16:33:18Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/DS_AzureSqlTable_dbPractice')]",
+				"[concat(variables('factoryId'), '/datasets/DS_MyPC')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CopyOneFIleUsingPipelineVariable')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data git to dl",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_http_git_custCSV",
+								"type": "DatasetReference",
+								"parameters": {
+									"pRelativeGitURL": {
+										"value": "@variables('vRelativeGitURL')",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dl4custCsv",
+								"type": "DatasetReference",
+								"parameters": {
+									"pFilename": {
+										"value": "@variables('vFileName')",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"variables": {
+					"vRelativeGitURL": {
+						"type": "String",
+						"defaultValue": "/skismail2506/sample_adf/raw/main/Customers.csv"
+					},
+					"vFileName": {
+						"type": "String",
+						"defaultValue": "customer.csv"
+					}
+				},
+				"folder": {
+					"name": "GitDataActivities"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-13T19:54:08Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_http_git_custCSV')]",
+				"[concat(variables('factoryId'), '/datasets/ds_dl4custCsv')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/CopyOneFIle_usingPipelineParameters')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Copy data git to dl",
+						"type": "Copy",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "HttpReadSettings",
+									"requestMethod": "GET"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"sink": {
+								"type": "DelimitedTextSink",
+								"storeSettings": {
+									"type": "AzureBlobFSWriteSettings"
+								},
+								"formatSettings": {
+									"type": "DelimitedTextWriteSettings",
+									"quoteAllText": true,
+									"fileExtension": ".txt"
+								}
+							},
+							"enableStaging": false,
+							"translator": {
+								"type": "TabularTranslator",
+								"typeConversion": true,
+								"typeConversionSettings": {
+									"allowDataTruncation": true,
+									"treatBooleanAsNumber": false
+								}
+							}
+						},
+						"inputs": [
+							{
+								"referenceName": "ds_http_git_custCSV",
+								"type": "DatasetReference",
+								"parameters": {
+									"pRelativeGitURL": {
+										"value": "@pipeline().parameters.pRelativeGitURL",
+										"type": "Expression"
+									}
+								}
+							}
+						],
+						"outputs": [
+							{
+								"referenceName": "ds_dl4custCsv",
+								"type": "DatasetReference",
+								"parameters": {
+									"pFilename": {
+										"value": "@pipeline().parameters.pFileName",
+										"type": "Expression"
+									}
+								}
+							}
+						]
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"pRelativeGitURL": {
+						"type": "string"
+					},
+					"pFileName": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "GitDataActivities"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-13T19:56:45Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_http_git_custCSV')]",
+				"[concat(variables('factoryId'), '/datasets/ds_dl4custCsv')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/PL_CopyFilesFrmGitForeach')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Lookup Files List",
+						"type": "Lookup",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"source": {
+								"type": "DelimitedTextSource",
+								"storeSettings": {
+									"type": "AzureBlobFSReadSettings",
+									"recursive": true,
+									"enablePartitionDiscovery": false
+								},
+								"formatSettings": {
+									"type": "DelimitedTextReadSettings"
+								}
+							},
+							"dataset": {
+								"referenceName": "ds_FileListOfGit_DL",
+								"type": "DatasetReference",
+								"parameters": {}
+							},
+							"firstRowOnly": false
+						}
+					},
+					{
+						"name": "ForEach Git URL",
+						"type": "ForEach",
+						"dependsOn": [
+							{
+								"activity": "Lookup Files List",
+								"dependencyConditions": [
+									"Succeeded"
+								]
+							}
+						],
+						"userProperties": [],
+						"typeProperties": {
+							"items": {
+								"value": "@activity('Lookup Files List').output.value",
+								"type": "Expression"
+							},
+							"isSequential": true,
+							"activities": [
+								{
+									"name": "Copy data git to dl",
+									"type": "Copy",
+									"dependsOn": [],
+									"policy": {
+										"timeout": "0.12:00:00",
+										"retry": 0,
+										"retryIntervalInSeconds": 30,
+										"secureOutput": false,
+										"secureInput": false
+									},
+									"userProperties": [],
+									"typeProperties": {
+										"source": {
+											"type": "DelimitedTextSource",
+											"storeSettings": {
+												"type": "HttpReadSettings",
+												"requestMethod": "GET"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextReadSettings"
+											}
+										},
+										"sink": {
+											"type": "DelimitedTextSink",
+											"storeSettings": {
+												"type": "AzureBlobFSWriteSettings"
+											},
+											"formatSettings": {
+												"type": "DelimitedTextWriteSettings",
+												"quoteAllText": true,
+												"fileExtension": ".txt"
+											}
+										},
+										"enableStaging": false,
+										"translator": {
+											"type": "TabularTranslator",
+											"typeConversion": true,
+											"typeConversionSettings": {
+												"allowDataTruncation": true,
+												"treatBooleanAsNumber": false
+											}
+										}
+									},
+									"inputs": [
+										{
+											"referenceName": "ds_http_git_custCSV",
+											"type": "DatasetReference",
+											"parameters": {
+												"pRelativeGitURL": {
+													"value": "@item().SourceRelativeURL",
+													"type": "Expression"
+												}
+											}
+										}
+									],
+									"outputs": [
+										{
+											"referenceName": "ds_dl4custCsv",
+											"type": "DatasetReference",
+											"parameters": {
+												"pFilename": {
+													"value": "@item().FileName",
+													"type": "Expression"
+												}
+											}
+										}
+									]
+								}
+							]
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "GitDataActivities"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-13T20:56:02Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_FileListOfGit_DL')]",
+				"[concat(variables('factoryId'), '/datasets/ds_http_git_custCSV')]",
+				"[concat(variables('factoryId'), '/datasets/ds_dl4custCsv')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pipelineGitTestWait1')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Wait1",
+						"type": "Wait",
+						"dependsOn": [],
+						"userProperties": [],
+						"typeProperties": {
+							"waitTimeInSeconds": 1
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "GitDataActivities"
+				},
+				"annotations": []
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_Copy blob using data flows')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Raw to Processed",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_Customer copy raw to processed",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceRawCustomer": {},
+									"sinkProcessedCustomer": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Mapping DF pipelines"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-12T17:00:55Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_Customer copy raw to processed')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_EmployeeSalesDetails')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "df_EmployeeSalesDetails",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_EmployeeSalesDetails",
+								"type": "DataFlowReference",
+								"parameters": {},
+								"datasetParameters": {
+									"sourceEmployee": {},
+									"sourceDepartment": {},
+									"sourceRegion": {},
+									"sourceSalesEAA": {},
+									"sourceSalesNA": {},
+									"sourceSalesSA": {},
+									"sinkTotalYearSlaes": {},
+									"sinkNASalescsv": {},
+									"sinkSASalescsv": {},
+									"sinkEAASalescsv": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"folder": {
+					"name": "Mapping DF pipelines"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-12T22:37:52Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_EmployeeSalesDetails')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/pl_PaymentDetails')]",
+			"type": "Microsoft.DataFactory/factories/pipelines",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"activities": [
+					{
+						"name": "Data flow Payment Details",
+						"type": "ExecuteDataFlow",
+						"dependsOn": [],
+						"policy": {
+							"timeout": "0.12:00:00",
+							"retry": 0,
+							"retryIntervalInSeconds": 30,
+							"secureOutput": false,
+							"secureInput": false
+						},
+						"userProperties": [],
+						"typeProperties": {
+							"dataflow": {
+								"referenceName": "df_PaymentsDetails",
+								"type": "DataFlowReference",
+								"parameters": {
+									"pMaxAge": {
+										"value": "@pipeline().parameters.maxAge",
+										"type": "Expression"
+									},
+									"pMinAge": {
+										"value": "@pipeline().parameters.minAge",
+										"type": "Expression"
+									}
+								},
+								"datasetParameters": {
+									"sourceCustomers": {},
+									"sourcePayments": {},
+									"sourceOrders": {},
+									"sinkPaymentDetails": {}
+								}
+							},
+							"staging": {},
+							"compute": {
+								"coreCount": 8,
+								"computeType": "General"
+							},
+							"traceLevel": "Fine"
+						}
+					}
+				],
+				"policy": {
+					"elapsedTimeMetric": {}
+				},
+				"parameters": {
+					"minAge": {
+						"type": "string"
+					},
+					"maxAge": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "Mapping DF pipelines"
+				},
+				"annotations": [],
+				"lastPublishTime": "2024-08-12T20:37:55Z"
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/dataflows/df_PaymentsDetails')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_AzureSqlTable_dbPractice')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_AzureSqlDatabase",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Self IR"
+				},
+				"annotations": [],
+				"type": "AzureSqlTable",
+				"schema": [],
+				"typeProperties": {
+					"schema": "dbo",
+					"table": "tblTableName"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_AzureSqlDatabase')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/DS_MyPC')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_MyPC_FileServer",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Self IR"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "FileServerLocation",
+						"fileName": "customer.txt"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_MyPC_FileServer')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_FileListOfGit_DL')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_datalake4gitdata",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "GitPipelineDatasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": "ListOfFiles.csv",
+						"folderPath": "ListFilesCsv",
+						"fileSystem": "data4mgit"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_datalake4gitdata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_Processed')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_blob_sampledata",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Mapping DF Datasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"container": "processed"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_blob_sampledata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_RawCustomer')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_blob_sampledata",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Mapping DF Datasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Customers.csv",
+						"container": "raw"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "customer_id",
+						"type": "String"
+					},
+					{
+						"name": "Customerslastname",
+						"type": "String"
+					},
+					{
+						"name": "Customersfirstname",
+						"type": "String"
+					},
+					{
+						"name": "CustomersCountry",
+						"type": "String"
+					},
+					{
+						"name": "Customersage",
+						"type": "String"
+					},
+					{
+						"name": "Customersgender",
+						"type": "String"
+					},
+					{
+						"name": "Customersemail",
+						"type": "String"
+					},
+					{
+						"name": "Customersprofession",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_blob_sampledata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_RawOrders')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_blob_sampledata",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Mapping DF Datasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Orders.csv",
+						"container": "raw"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "order_id",
+						"type": "String"
+					},
+					{
+						"name": "customer_id",
+						"type": "String"
+					},
+					{
+						"name": "Store_id",
+						"type": "String"
+					},
+					{
+						"name": "Date",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_blob_sampledata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_RawPayments')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_blob_sampledata",
+					"type": "LinkedServiceReference"
+				},
+				"folder": {
+					"name": "Mapping DF Datasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobStorageLocation",
+						"fileName": "Payments.csv",
+						"container": "raw"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": [
+					{
+						"name": "order_id",
+						"type": "String"
+					},
+					{
+						"name": "payment_id",
+						"type": "String"
+					},
+					{
+						"name": "type",
+						"type": "String"
+					},
+					{
+						"name": "descriptions",
+						"type": "String"
+					},
+					{
+						"name": "pDate",
+						"type": "String"
+					},
+					{
+						"name": "Status",
+						"type": "String"
+					},
+					{
+						"name": "Details",
+						"type": "String"
+					},
+					{
+						"name": "Total_Invoice",
+						"type": "String"
+					},
+					{
+						"name": "Due_Amount",
+						"type": "String"
+					}
+				]
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_blob_sampledata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_dl4custCsv')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_datalake4gitdata",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"pFilename": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "GitPipelineDatasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "AzureBlobFSLocation",
+						"fileName": {
+							"value": "@dataset().pFilename",
+							"type": "Expression"
+						},
+						"folderPath": "csv",
+						"fileSystem": "data4mgit"
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_datalake4gitdata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/ds_http_git_custCSV')]",
+			"type": "Microsoft.DataFactory/factories/datasets",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"linkedServiceName": {
+					"referenceName": "LS_https_gitData",
+					"type": "LinkedServiceReference"
+				},
+				"parameters": {
+					"pRelativeGitURL": {
+						"type": "string"
+					}
+				},
+				"folder": {
+					"name": "GitPipelineDatasets"
+				},
+				"annotations": [],
+				"type": "DelimitedText",
+				"typeProperties": {
+					"location": {
+						"type": "HttpServerLocation",
+						"relativeUrl": {
+							"value": "@dataset().pRelativeGitURL",
+							"type": "Expression"
+						}
+					},
+					"columnDelimiter": ",",
+					"escapeChar": "\\",
+					"firstRowAsHeader": true,
+					"quoteChar": "\""
+				},
+				"schema": []
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_https_gitData')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_AzureSqlDatabase')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureSqlDatabase",
+				"typeProperties": {
+					"server": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_server')]",
+					"database": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_database')]",
+					"encrypt": "mandatory",
+					"trustServerCertificate": false,
+					"authenticationType": "SQL",
+					"userName": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_userName')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_AzureSqlDatabase_password')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_MyPC_FileServer')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "FileServer",
+				"typeProperties": {
+					"host": "[parameters('LS_MyPC_FileServer_properties_typeProperties_host')]",
+					"userId": "[parameters('LS_MyPC_FileServer_properties_typeProperties_userId')]",
+					"password": {
+						"type": "SecureString",
+						"value": "[parameters('LS_MyPC_FileServer_password')]"
+					}
+				},
+				"connectVia": {
+					"referenceName": "SelfHostedIntegrationRuntime",
+					"type": "IntegrationRuntimeReference"
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/integrationRuntimes/SelfHostedIntegrationRuntime')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_blob_sampledata')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobStorage",
+				"typeProperties": {
+					"connectionString": "[parameters('LS_blob_sampledata_connectionString')]"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_datalake4gitdata')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "AzureBlobFS",
+				"typeProperties": {
+					"url": "[parameters('LS_datalake4gitdata_properties_typeProperties_url')]",
+					"accountKey": {
+						"type": "SecureString",
+						"value": "[parameters('LS_datalake4gitdata_accountKey')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/LS_https_gitData')]",
+			"type": "Microsoft.DataFactory/factories/linkedServices",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"type": "HttpServer",
+				"typeProperties": {
+					"url": "[parameters('LS_https_gitData_properties_typeProperties_url')]",
+					"enableServerCertificateValidation": true,
+					"authenticationType": "Anonymous"
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tr_CopyAllFiles2DL')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "PL_CopyFilesFrmGitForeach",
+							"type": "PipelineReference"
+						},
+						"parameters": {}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 5,
+						"startTime": "2024-08-14T02:38:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/PL_CopyFilesFrmGitForeach')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/tr_CopyFile2dl')]",
+			"type": "Microsoft.DataFactory/factories/triggers",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"annotations": [],
+				"runtimeState": "Started",
+				"pipelines": [
+					{
+						"pipelineReference": {
+							"referenceName": "CopyOneFIle_usingPipelineParameters",
+							"type": "PipelineReference"
+						},
+						"parameters": {
+							"pRelativeGitURL": "[parameters('tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pRelativeGitURL')]",
+							"pFileName": "[parameters('tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pFileName')]"
+						}
+					}
+				],
+				"type": "ScheduleTrigger",
+				"typeProperties": {
+					"recurrence": {
+						"frequency": "Day",
+						"interval": 1,
+						"startTime": "2024-08-14T01:40:00",
+						"timeZone": "India Standard Time"
+					}
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/pipelines/CopyOneFIle_usingPipelineParameters')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/SelfHostedIntegrationRuntime')]",
+			"type": "Microsoft.DataFactory/factories/integrationRuntimes",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"type": "SelfHosted",
+				"typeProperties": {}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_Customer copy raw to processed')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Mapping DF"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_RawCustomer",
+								"type": "DatasetReference"
+							},
+							"name": "sourceRawCustomer"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Processed",
+								"type": "DatasetReference"
+							},
+							"name": "sinkProcessedCustomer"
+						}
+					],
+					"transformations": [],
+					"scriptLines": [
+						"source(output(",
+						"          customer_id as string,",
+						"          Customerslastname as string,",
+						"          Customersfirstname as string,",
+						"          CustomersCountry as string,",
+						"          Customersage as string,",
+						"          Customersgender as string,",
+						"          Customersemail as string,",
+						"          Customersprofession as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceRawCustomer",
+						"sourceRawCustomer sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['ProcessedCustomer.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkProcessedCustomer"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_RawCustomer')]",
+				"[concat(variables('factoryId'), '/datasets/ds_Processed')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_EmployeeSalesDetails')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Mapping DF"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceEmployee"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceDepartment"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceRegion"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceSalesEAA"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceSalesNA"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sourceSalesSA"
+						}
+					],
+					"sinks": [
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkTotalYearSlaes"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkNASalescsv"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkSASalescsv"
+						},
+						{
+							"linkedService": {
+								"referenceName": "LS_blob_sampledata",
+								"type": "LinkedServiceReference"
+							},
+							"name": "sinkEAASalescsv"
+						}
+					],
+					"transformations": [
+						{
+							"name": "unionSalesEAANA"
+						},
+						{
+							"name": "unionSalesEAANASA"
+						},
+						{
+							"name": "UnPivotSalesData"
+						},
+						{
+							"name": "derivedYearColumn"
+						},
+						{
+							"name": "EmployeeWithAdditionalColumns"
+						},
+						{
+							"name": "selectRelaventEmployeeData"
+						},
+						{
+							"name": "selectRelevantDepartmentData"
+						},
+						{
+							"name": "selectRelevantRegionData"
+						},
+						{
+							"name": "lookupEmployeeDepartments"
+						},
+						{
+							"name": "lookupEmpDepRegData"
+						},
+						{
+							"name": "joinEmployeeSalesData"
+						},
+						{
+							"name": "selectRelevantEmployeeSales"
+						},
+						{
+							"name": "SummarizeEmployeeSales"
+						},
+						{
+							"name": "aggregateEmployeeYearSales"
+						},
+						{
+							"name": "split1"
+						}
+					],
+					"scriptLines": [
+						"source(output(",
+						"          Employee_id as integer,",
+						"          store_id as string,",
+						"          department_id as integer,",
+						"          firstname as string,",
+						"          lastname as string,",
+						"          Country as string,",
+						"          age as integer,",
+						"          gender as string,",
+						"          email as string,",
+						"          phone as long",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'raw',",
+						"     fileName: 'Employee.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceEmployee",
+						"source(output(",
+						"          department_id as integer,",
+						"          Department as string,",
+						"          Phone as integer,",
+						"          Email as string",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'raw',",
+						"     fileName: 'Department.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceDepartment",
+						"source(output(",
+						"          region_id as integer,",
+						"          region as string",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'raw',",
+						"     fileName: 'Region.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceRegion",
+						"source(output(",
+						"          Employee_id as integer,",
+						"          Sales_2018 as integer,",
+						"          Sales_2019 as integer,",
+						"          Sales_2020 as integer,",
+						"          Sales_2021 as integer,",
+						"          Sales_2022 as integer,",
+						"          Sales_2023 as integer",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'raw',",
+						"     fileName: 'Sales_EAA.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceSalesEAA",
+						"source(output(",
+						"          Employee_id as integer,",
+						"          Sales_2018 as integer,",
+						"          Sales_2019 as integer,",
+						"          Sales_2020 as integer,",
+						"          Sales_2021 as integer,",
+						"          Sales_2022 as integer,",
+						"          Sales_2023 as integer",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'raw',",
+						"     fileName: 'Sales_NA.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceSalesNA",
+						"source(output(",
+						"          Employee_id as integer,",
+						"          Sales_2018 as integer,",
+						"          Sales_2019 as integer,",
+						"          Sales_2020 as integer,",
+						"          Sales_2021 as integer,",
+						"          Sales_2022 as integer,",
+						"          Sales_2023 as integer",
+						"     ),",
+						"     useSchema: false,",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false,",
+						"     format: 'delimited',",
+						"     container: 'raw',",
+						"     fileName: 'Sales_SA.csv',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true) ~> sourceSalesSA",
+						"sourceSalesEAA, sourceSalesNA union(byName: true)~> unionSalesEAANA",
+						"unionSalesEAANA, sourceSalesSA union(byName: true)~> unionSalesEAANASA",
+						"unionSalesEAANASA unpivot(output(",
+						"          Year as string,",
+						"          Sales as integer",
+						"     ),",
+						"     ungroupBy(Employee_id),",
+						"     lateral: true,",
+						"     ignoreNullPivots: false) ~> UnPivotSalesData",
+						"UnPivotSalesData derive(Year = toInteger(right(Year, 4))) ~> derivedYearColumn",
+						"sourceEmployee derive(Employee_Full_Name = concat(firstname,' ', lastname),",
+						"          Employee_Country = split(Country, ', ')[1],",
+						"          Employee_Region_ID = split(Country, ', ')[2]) ~> EmployeeWithAdditionalColumns",
+						"EmployeeWithAdditionalColumns select(mapColumn(",
+						"          Employee_id,",
+						"          department_id,",
+						"          Employee_Full_Name,",
+						"          Employee_Country,",
+						"          Employee_Region_ID",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelaventEmployeeData",
+						"sourceDepartment select(mapColumn(",
+						"          department_id,",
+						"          Department",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantDepartmentData",
+						"sourceRegion select(mapColumn(",
+						"          Employee_Region_id = region_id,",
+						"          Employee_Region = region",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantRegionData",
+						"selectRelaventEmployeeData, selectRelevantDepartmentData lookup(selectRelaventEmployeeData@department_id == selectRelevantDepartmentData@department_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookupEmployeeDepartments",
+						"lookupEmployeeDepartments, selectRelevantRegionData lookup(toInteger(selectRelaventEmployeeData@Employee_Region_ID) == selectRelevantRegionData@Employee_Region_id,",
+						"     multiple: false,",
+						"     pickup: 'any',",
+						"     broadcast: 'auto')~> lookupEmpDepRegData",
+						"lookupEmpDepRegData, derivedYearColumn join(selectRelaventEmployeeData@Employee_id == UnPivotSalesData@Employee_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinEmployeeSalesData",
+						"joinEmployeeSalesData select(mapColumn(",
+						"          Employee_id = selectRelaventEmployeeData@Employee_id,",
+						"          Employee_Full_Name,",
+						"          Employee_Country,",
+						"          Employee_Region,",
+						"          Year,",
+						"          Sales",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantEmployeeSales",
+						"selectRelevantEmployeeSales aggregate(groupBy(Employee_id,",
+						"          Employee_Full_Name,",
+						"          Employee_Country,",
+						"          Employee_Region),",
+						"     Total_Sales = sum(Sales),",
+						"          Avg_Sales = avg(Sales),",
+						"          Max_Sales = max(Sales),",
+						"          Min_Sales = min(Sales)) ~> SummarizeEmployeeSales",
+						"selectRelevantEmployeeSales aggregate(groupBy(Employee_id,",
+						"          Employee_Full_Name,",
+						"          Year),",
+						"     Total_Sales = sum(Sales),",
+						"          Avg_Sales = avg(Sales),",
+						"          Max_Sales = max(Sales),",
+						"          Min_Sales = min(Sales)) ~> aggregateEmployeeYearSales",
+						"SummarizeEmployeeSales split(Employee_Region == 'North America',",
+						"     Employee_Region == 'South America',",
+						"     disjoint: false) ~> split1@(SummaryEmployeeSalesNA, SummaryEmployeeSalesSouthA, SummaryEmployeeSalesEAA)",
+						"aggregateEmployeeYearSales sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'processed',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['Total_Sales_Year.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkTotalYearSlaes",
+						"split1@SummaryEmployeeSalesNA sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'processed',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['NA_Sales.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkNASalescsv",
+						"split1@SummaryEmployeeSalesSouthA sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'processed',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['SA_Sales.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkSASalescsv",
+						"split1@SummaryEmployeeSalesEAA sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     format: 'delimited',",
+						"     container: 'processed',",
+						"     columnDelimiter: ',',",
+						"     escapeChar: '\\\\',",
+						"     quoteChar: '\\\"',",
+						"     columnNamesAsHeader: true,",
+						"     partitionFileNames:['EAA_Sales.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     partitionBy('hash', 1)) ~> sinkEAASalescsv"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/linkedServices/LS_blob_sampledata')]"
+			]
+		},
+		{
+			"name": "[concat(parameters('factoryName'), '/df_PaymentsDetails')]",
+			"type": "Microsoft.DataFactory/factories/dataflows",
+			"apiVersion": "2018-06-01",
+			"properties": {
+				"folder": {
+					"name": "Mapping DF"
+				},
+				"type": "MappingDataFlow",
+				"typeProperties": {
+					"sources": [
+						{
+							"dataset": {
+								"referenceName": "ds_RawCustomer",
+								"type": "DatasetReference"
+							},
+							"name": "sourceCustomers"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_RawPayments",
+								"type": "DatasetReference"
+							},
+							"name": "sourcePayments"
+						},
+						{
+							"dataset": {
+								"referenceName": "ds_RawOrders",
+								"type": "DatasetReference"
+							},
+							"name": "sourceOrders"
+						}
+					],
+					"sinks": [
+						{
+							"dataset": {
+								"referenceName": "ds_Processed",
+								"type": "DatasetReference"
+							},
+							"name": "sinkPaymentDetails"
+						}
+					],
+					"transformations": [
+						{
+							"name": "filterCustomerAge"
+						},
+						{
+							"name": "filterOnlyNonErrorData"
+						},
+						{
+							"name": "selectRelevantOrderData"
+						},
+						{
+							"name": "selectRelevantCustomersData"
+						},
+						{
+							"name": "selectRelevantPaymentsData"
+						},
+						{
+							"name": "joinCustomersOrders"
+						},
+						{
+							"name": "joinCustomersOrdersPayments"
+						},
+						{
+							"name": "selectPaymentDetails"
+						},
+						{
+							"name": "pivotDueAmount"
+						}
+					],
+					"scriptLines": [
+						"parameters{",
+						"     pMaxAge as integer,",
+						"     pMinAge as integer",
+						"}",
+						"source(output(",
+						"          customer_id as string,",
+						"          Customerslastname as string,",
+						"          Customersfirstname as string,",
+						"          CustomersCountry as string,",
+						"          Customersage as short,",
+						"          Customersgender as string,",
+						"          Customersemail as string,",
+						"          Customersprofession as string",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceCustomers",
+						"source(output(",
+						"          order_id as string,",
+						"          payment_id as string,",
+						"          type as string,",
+						"          descriptions as string,",
+						"          pDate as date 'DD/mm/yyyy',",
+						"          Status as string,",
+						"          Details as string,",
+						"          Total_Invoice as short,",
+						"          Due_Amount as double",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourcePayments",
+						"source(output(",
+						"          order_id as string,",
+						"          customer_id as string,",
+						"          Store_id as string,",
+						"          Date as date 'DD/mm/yyyy'",
+						"     ),",
+						"     allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     ignoreNoFilesFound: false) ~> sourceOrders",
+						"sourceCustomers filter(Customersage >= $pMinAge && Customersage <= $pMaxAge) ~> filterCustomerAge",
+						"sourcePayments filter(Status != 'error' && (not(equals(Status, 'refunded')))) ~> filterOnlyNonErrorData",
+						"sourceOrders select(mapColumn(",
+						"          order_id,",
+						"          customer_id,",
+						"          Date",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantOrderData",
+						"filterCustomerAge select(mapColumn(",
+						"          customer_id,",
+						"          Customers_First_Name = Customersfirstname,",
+						"          Customers_Last_Name = Customerslastname,",
+						"          Customers_Country = CustomersCountry,",
+						"          Customers_Age = Customersage",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantCustomersData",
+						"filterOnlyNonErrorData select(mapColumn(",
+						"          order_id,",
+						"          payment_id,",
+						"          Status,",
+						"          Total_Invoice,",
+						"          Due_Amount",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectRelevantPaymentsData",
+						"selectRelevantOrderData, selectRelevantCustomersData join(selectRelevantOrderData@customer_id == selectRelevantCustomersData@customer_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinCustomersOrders",
+						"joinCustomersOrders, selectRelevantPaymentsData join(selectRelevantOrderData@order_id == selectRelevantPaymentsData@order_id,",
+						"     joinType:'inner',",
+						"     matchType:'exact',",
+						"     ignoreSpaces: false,",
+						"     broadcast: 'auto')~> joinCustomersOrdersPayments",
+						"joinCustomersOrdersPayments select(mapColumn(",
+						"          customer_id = selectRelevantOrderData@customer_id,",
+						"          Date,",
+						"          Customers_First_Name,",
+						"          Customers_Last_Name,",
+						"          Customers_Country,",
+						"          Customers_Age,",
+						"          Status,",
+						"          Total_Invoice,",
+						"          Due_Amount",
+						"     ),",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true) ~> selectPaymentDetails",
+						"selectPaymentDetails pivot(groupBy(customer_id,",
+						"          Date,",
+						"          Customers_First_Name,",
+						"          Customers_Last_Name,",
+						"          Customers_Country,",
+						"          Customers_Age,",
+						"          Status,",
+						"          Total_Invoice),",
+						"     pivotBy(Status, ['received', 'not received']),",
+						"     Due_Amount_ = sum(Due_Amount),",
+						"     columnNaming: '$N$V',",
+						"     lateral: true) ~> pivotDueAmount",
+						"pivotDueAmount sink(allowSchemaDrift: true,",
+						"     validateSchema: false,",
+						"     partitionFileNames:['PaymentDetails.csv'],",
+						"     skipDuplicateMapInputs: true,",
+						"     skipDuplicateMapOutputs: true,",
+						"     mapColumn(",
+						"          customer_id,",
+						"          Date,",
+						"          Customers_First_Name,",
+						"          Customers_Last_Name,",
+						"          Customers_Country,",
+						"          Customers_Age,",
+						"          Total_Invoice,",
+						"          Due_Amount_received,",
+						"          {Due_Amount_not received}",
+						"     ),",
+						"     partitionBy('hash', 1)) ~> sinkPaymentDetails"
+					]
+				}
+			},
+			"dependsOn": [
+				"[concat(variables('factoryId'), '/datasets/ds_RawCustomer')]",
+				"[concat(variables('factoryId'), '/datasets/ds_RawPayments')]",
+				"[concat(variables('factoryId'), '/datasets/ds_RawOrders')]",
+				"[concat(variables('factoryId'), '/datasets/ds_Processed')]"
+			]
+		}
+	]
+}

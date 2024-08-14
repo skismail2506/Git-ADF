@@ -1,0 +1,153 @@
+{
+	"$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+	"contentVersion": "1.0.0.0",
+	"parameters": {
+		"factoryName": {
+			"type": "string",
+			"metadata": "Data Factory name",
+			"defaultValue": "AdfPractice113"
+		},
+		"LS_AzureSqlDatabase_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_AzureSqlDatabase'"
+		},
+		"LS_MyPC_FileServer_password": {
+			"type": "secureString",
+			"metadata": "Secure string for 'password' of 'LS_MyPC_FileServer'"
+		},
+		"LS_blob_sampledata_connectionString": {
+			"type": "secureString",
+			"metadata": "Secure string for 'connectionString' of 'LS_blob_sampledata'"
+		},
+		"LS_datalake4gitdata_accountKey": {
+			"type": "secureString",
+			"metadata": "Secure string for 'accountKey' of 'LS_datalake4gitdata'"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_server": {
+			"type": "string",
+			"defaultValue": "serverpractice113.database.windows.net"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_database": {
+			"type": "string",
+			"defaultValue": "db_practice"
+		},
+		"LS_AzureSqlDatabase_properties_typeProperties_userName": {
+			"type": "string",
+			"defaultValue": "sqladmin"
+		},
+		"LS_MyPC_FileServer_properties_typeProperties_host": {
+			"type": "string",
+			"defaultValue": "E:\\Azure Practice Udemy\\SQL_Data_SelfIR"
+		},
+		"LS_MyPC_FileServer_properties_typeProperties_userId": {
+			"type": "string",
+			"defaultValue": "Ismail"
+		},
+		"LS_datalake4gitdata_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://datalake4gitdata.dfs.core.windows.net/"
+		},
+		"LS_https_gitData_properties_typeProperties_url": {
+			"type": "string",
+			"defaultValue": "https://github.com"
+		},
+		"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pRelativeGitURL": {
+			"type": "string",
+			"defaultValue": "/skismail2506/sample_adf/raw/main/Department.csv"
+		},
+		"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pFileName": {
+			"type": "string",
+			"defaultValue": "Department.csv"
+		},
+		"containerUri": {
+			"type": "string",
+			"metadata": "URI to storage account containing linked ARM templates"
+		},
+		"containerSasToken": {
+			"type": "string",
+			"metadata": "Sas token to storage account containing linked ARM templates"
+		}
+	},
+	"variables": {
+		"factoryId": "[concat('Microsoft.DataFactory/factories/', parameters('factoryName'))]"
+	},
+	"resources": [
+		{
+			"name": "AdfPractice113_ArmTemplate_0",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_0.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"LS_AzureSqlDatabase_password": {
+						"value": "[parameters('LS_AzureSqlDatabase_password')]"
+					},
+					"LS_blob_sampledata_connectionString": {
+						"value": "[parameters('LS_blob_sampledata_connectionString')]"
+					},
+					"LS_datalake4gitdata_accountKey": {
+						"value": "[parameters('LS_datalake4gitdata_accountKey')]"
+					},
+					"LS_MyPC_FileServer_password": {
+						"value": "[parameters('LS_MyPC_FileServer_password')]"
+					},
+					"LS_AzureSqlDatabase_properties_typeProperties_server": {
+						"value": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_server')]"
+					},
+					"LS_AzureSqlDatabase_properties_typeProperties_database": {
+						"value": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_database')]"
+					},
+					"LS_AzureSqlDatabase_properties_typeProperties_userName": {
+						"value": "[parameters('LS_AzureSqlDatabase_properties_typeProperties_userName')]"
+					},
+					"LS_datalake4gitdata_properties_typeProperties_url": {
+						"value": "[parameters('LS_datalake4gitdata_properties_typeProperties_url')]"
+					},
+					"LS_https_gitData_properties_typeProperties_url": {
+						"value": "[parameters('LS_https_gitData_properties_typeProperties_url')]"
+					},
+					"LS_MyPC_FileServer_properties_typeProperties_host": {
+						"value": "[parameters('LS_MyPC_FileServer_properties_typeProperties_host')]"
+					},
+					"LS_MyPC_FileServer_properties_typeProperties_userId": {
+						"value": "[parameters('LS_MyPC_FileServer_properties_typeProperties_userId')]"
+					}
+				}
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "AdfPractice113_ArmTemplate_1",
+			"type": "Microsoft.Resources/deployments",
+			"apiVersion": "2018-02-01",
+			"properties": {
+				"mode": "incremental",
+				"templateLink": {
+					"uri": "[concat(parameters('containerUri'), '/ArmTemplate_1.json', parameters('containerSasToken'))]",
+					"contentVersion": "1.0.0.0"
+				},
+				"parameters": {
+					"factoryName": {
+						"value": "[parameters('factoryName')]"
+					},
+					"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pRelativeGitURL": {
+						"value": "[parameters('tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pRelativeGitURL')]"
+					},
+					"tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pFileName": {
+						"value": "[parameters('tr_CopyFile2dl_properties_CopyOneFIle_usingPipelineParameters_parameters_pFileName')]"
+					}
+				}
+			},
+			"dependsOn": [
+				"[resourceId('Microsoft.Resources/deployments', 'AdfPractice113_ArmTemplate_0')]"
+			]
+		}
+	]
+}
