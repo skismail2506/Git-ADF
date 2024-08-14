@@ -1,0 +1,9 @@
+{
+	"name": "pipelineGitTest",
+	"properties": {
+		"folder": {
+			"name": "GitDataActivities"
+		},
+		"annotations": []
+	}
+}
