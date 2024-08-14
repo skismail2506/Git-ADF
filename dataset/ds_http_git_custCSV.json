@@ -1,0 +1,34 @@
+{
+	"name": "ds_http_git_custCSV",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_https_gitData",
+			"type": "LinkedServiceReference"
+		},
+		"parameters": {
+			"pRelativeGitURL": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "GitPipelineDatasets"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "HttpServerLocation",
+				"relativeUrl": {
+					"value": "@dataset().pRelativeGitURL",
+					"type": "Expression"
+				}
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

@@ -1,0 +1,372 @@
+{
+	"name": "df_EmployeeSalesDetails",
+	"properties": {
+		"folder": {
+			"name": "Mapping DF"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceEmployee"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceDepartment"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceRegion"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceSalesEAA"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceSalesNA"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sourceSalesSA"
+				}
+			],
+			"sinks": [
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkTotalYearSlaes"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkNASalescsv"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkSASalescsv"
+				},
+				{
+					"linkedService": {
+						"referenceName": "LS_blob_sampledata",
+						"type": "LinkedServiceReference"
+					},
+					"name": "sinkEAASalescsv"
+				}
+			],
+			"transformations": [
+				{
+					"name": "unionSalesEAANA"
+				},
+				{
+					"name": "unionSalesEAANASA"
+				},
+				{
+					"name": "UnPivotSalesData"
+				},
+				{
+					"name": "derivedYearColumn"
+				},
+				{
+					"name": "EmployeeWithAdditionalColumns"
+				},
+				{
+					"name": "selectRelaventEmployeeData"
+				},
+				{
+					"name": "selectRelevantDepartmentData"
+				},
+				{
+					"name": "selectRelevantRegionData"
+				},
+				{
+					"name": "lookupEmployeeDepartments"
+				},
+				{
+					"name": "lookupEmpDepRegData"
+				},
+				{
+					"name": "joinEmployeeSalesData"
+				},
+				{
+					"name": "selectRelevantEmployeeSales"
+				},
+				{
+					"name": "SummarizeEmployeeSales"
+				},
+				{
+					"name": "aggregateEmployeeYearSales"
+				},
+				{
+					"name": "split1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          Employee_id as integer,",
+				"          store_id as string,",
+				"          department_id as integer,",
+				"          firstname as string,",
+				"          lastname as string,",
+				"          Country as string,",
+				"          age as integer,",
+				"          gender as string,",
+				"          email as string,",
+				"          phone as long",
+				"     ),",
+				"     useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     container: 'raw',",
+				"     fileName: 'Employee.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> sourceEmployee",
+				"source(output(",
+				"          department_id as integer,",
+				"          Department as string,",
+				"          Phone as integer,",
+				"          Email as string",
+				"     ),",
+				"     useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     container: 'raw',",
+				"     fileName: 'Department.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> sourceDepartment",
+				"source(output(",
+				"          region_id as integer,",
+				"          region as string",
+				"     ),",
+				"     useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     container: 'raw',",
+				"     fileName: 'Region.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> sourceRegion",
+				"source(output(",
+				"          Employee_id as integer,",
+				"          Sales_2018 as integer,",
+				"          Sales_2019 as integer,",
+				"          Sales_2020 as integer,",
+				"          Sales_2021 as integer,",
+				"          Sales_2022 as integer,",
+				"          Sales_2023 as integer",
+				"     ),",
+				"     useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     container: 'raw',",
+				"     fileName: 'Sales_EAA.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> sourceSalesEAA",
+				"source(output(",
+				"          Employee_id as integer,",
+				"          Sales_2018 as integer,",
+				"          Sales_2019 as integer,",
+				"          Sales_2020 as integer,",
+				"          Sales_2021 as integer,",
+				"          Sales_2022 as integer,",
+				"          Sales_2023 as integer",
+				"     ),",
+				"     useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     container: 'raw',",
+				"     fileName: 'Sales_NA.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> sourceSalesNA",
+				"source(output(",
+				"          Employee_id as integer,",
+				"          Sales_2018 as integer,",
+				"          Sales_2019 as integer,",
+				"          Sales_2020 as integer,",
+				"          Sales_2021 as integer,",
+				"          Sales_2022 as integer,",
+				"          Sales_2023 as integer",
+				"     ),",
+				"     useSchema: false,",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     format: 'delimited',",
+				"     container: 'raw',",
+				"     fileName: 'Sales_SA.csv',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true) ~> sourceSalesSA",
+				"sourceSalesEAA, sourceSalesNA union(byName: true)~> unionSalesEAANA",
+				"unionSalesEAANA, sourceSalesSA union(byName: true)~> unionSalesEAANASA",
+				"unionSalesEAANASA unpivot(output(",
+				"          Year as string,",
+				"          Sales as integer",
+				"     ),",
+				"     ungroupBy(Employee_id),",
+				"     lateral: true,",
+				"     ignoreNullPivots: false) ~> UnPivotSalesData",
+				"UnPivotSalesData derive(Year = toInteger(right(Year, 4))) ~> derivedYearColumn",
+				"sourceEmployee derive(Employee_Full_Name = concat(firstname,' ', lastname),",
+				"          Employee_Country = split(Country, ', ')[1],",
+				"          Employee_Region_ID = split(Country, ', ')[2]) ~> EmployeeWithAdditionalColumns",
+				"EmployeeWithAdditionalColumns select(mapColumn(",
+				"          Employee_id,",
+				"          department_id,",
+				"          Employee_Full_Name,",
+				"          Employee_Country,",
+				"          Employee_Region_ID",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRelaventEmployeeData",
+				"sourceDepartment select(mapColumn(",
+				"          department_id,",
+				"          Department",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRelevantDepartmentData",
+				"sourceRegion select(mapColumn(",
+				"          Employee_Region_id = region_id,",
+				"          Employee_Region = region",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRelevantRegionData",
+				"selectRelaventEmployeeData, selectRelevantDepartmentData lookup(selectRelaventEmployeeData@department_id == selectRelevantDepartmentData@department_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookupEmployeeDepartments",
+				"lookupEmployeeDepartments, selectRelevantRegionData lookup(toInteger(selectRelaventEmployeeData@Employee_Region_ID) == selectRelevantRegionData@Employee_Region_id,",
+				"     multiple: false,",
+				"     pickup: 'any',",
+				"     broadcast: 'auto')~> lookupEmpDepRegData",
+				"lookupEmpDepRegData, derivedYearColumn join(selectRelaventEmployeeData@Employee_id == UnPivotSalesData@Employee_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinEmployeeSalesData",
+				"joinEmployeeSalesData select(mapColumn(",
+				"          Employee_id = selectRelaventEmployeeData@Employee_id,",
+				"          Employee_Full_Name,",
+				"          Employee_Country,",
+				"          Employee_Region,",
+				"          Year,",
+				"          Sales",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRelevantEmployeeSales",
+				"selectRelevantEmployeeSales aggregate(groupBy(Employee_id,",
+				"          Employee_Full_Name,",
+				"          Employee_Country,",
+				"          Employee_Region),",
+				"     Total_Sales = sum(Sales),",
+				"          Avg_Sales = avg(Sales),",
+				"          Max_Sales = max(Sales),",
+				"          Min_Sales = min(Sales)) ~> SummarizeEmployeeSales",
+				"selectRelevantEmployeeSales aggregate(groupBy(Employee_id,",
+				"          Employee_Full_Name,",
+				"          Year),",
+				"     Total_Sales = sum(Sales),",
+				"          Avg_Sales = avg(Sales),",
+				"          Max_Sales = max(Sales),",
+				"          Min_Sales = min(Sales)) ~> aggregateEmployeeYearSales",
+				"SummarizeEmployeeSales split(Employee_Region == 'North America',",
+				"     Employee_Region == 'South America',",
+				"     disjoint: false) ~> split1@(SummaryEmployeeSalesNA, SummaryEmployeeSalesSouthA, SummaryEmployeeSalesEAA)",
+				"aggregateEmployeeYearSales sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     container: 'processed',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true,",
+				"     partitionFileNames:['Total_Sales_Year.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkTotalYearSlaes",
+				"split1@SummaryEmployeeSalesNA sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     container: 'processed',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true,",
+				"     partitionFileNames:['NA_Sales.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkNASalescsv",
+				"split1@SummaryEmployeeSalesSouthA sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     container: 'processed',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true,",
+				"     partitionFileNames:['SA_Sales.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkSASalescsv",
+				"split1@SummaryEmployeeSalesEAA sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     format: 'delimited',",
+				"     container: 'processed',",
+				"     columnDelimiter: ',',",
+				"     escapeChar: '\\\\',",
+				"     quoteChar: '\\\"',",
+				"     columnNamesAsHeader: true,",
+				"     partitionFileNames:['EAA_Sales.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     partitionBy('hash', 1)) ~> sinkEAASalescsv"
+			]
+		}
+	}
+}

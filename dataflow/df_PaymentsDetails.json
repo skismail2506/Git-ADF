@@ -1,0 +1,193 @@
+{
+	"name": "df_PaymentsDetails",
+	"properties": {
+		"folder": {
+			"name": "Mapping DF"
+		},
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "ds_RawCustomer",
+						"type": "DatasetReference"
+					},
+					"name": "sourceCustomers"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_RawPayments",
+						"type": "DatasetReference"
+					},
+					"name": "sourcePayments"
+				},
+				{
+					"dataset": {
+						"referenceName": "ds_RawOrders",
+						"type": "DatasetReference"
+					},
+					"name": "sourceOrders"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "ds_Processed",
+						"type": "DatasetReference"
+					},
+					"name": "sinkPaymentDetails"
+				}
+			],
+			"transformations": [
+				{
+					"name": "filterCustomerAge"
+				},
+				{
+					"name": "filterOnlyNonErrorData"
+				},
+				{
+					"name": "selectRelevantOrderData"
+				},
+				{
+					"name": "selectRelevantCustomersData"
+				},
+				{
+					"name": "selectRelevantPaymentsData"
+				},
+				{
+					"name": "joinCustomersOrders"
+				},
+				{
+					"name": "joinCustomersOrdersPayments"
+				},
+				{
+					"name": "selectPaymentDetails"
+				},
+				{
+					"name": "pivotDueAmount"
+				}
+			],
+			"scriptLines": [
+				"parameters{",
+				"     pMaxAge as integer,",
+				"     pMinAge as integer",
+				"}",
+				"source(output(",
+				"          customer_id as string,",
+				"          Customerslastname as string,",
+				"          Customersfirstname as string,",
+				"          CustomersCountry as string,",
+				"          Customersage as short,",
+				"          Customersgender as string,",
+				"          Customersemail as string,",
+				"          Customersprofession as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceCustomers",
+				"source(output(",
+				"          order_id as string,",
+				"          payment_id as string,",
+				"          type as string,",
+				"          descriptions as string,",
+				"          pDate as date 'DD/mm/yyyy',",
+				"          Status as string,",
+				"          Details as string,",
+				"          Total_Invoice as short,",
+				"          Due_Amount as double",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourcePayments",
+				"source(output(",
+				"          order_id as string,",
+				"          customer_id as string,",
+				"          Store_id as string,",
+				"          Date as date 'DD/mm/yyyy'",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> sourceOrders",
+				"sourceCustomers filter(Customersage >= $pMinAge && Customersage <= $pMaxAge) ~> filterCustomerAge",
+				"sourcePayments filter(Status != 'error' && (not(equals(Status, 'refunded')))) ~> filterOnlyNonErrorData",
+				"sourceOrders select(mapColumn(",
+				"          order_id,",
+				"          customer_id,",
+				"          Date",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRelevantOrderData",
+				"filterCustomerAge select(mapColumn(",
+				"          customer_id,",
+				"          Customers_First_Name = Customersfirstname,",
+				"          Customers_Last_Name = Customerslastname,",
+				"          Customers_Country = CustomersCountry,",
+				"          Customers_Age = Customersage",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRelevantCustomersData",
+				"filterOnlyNonErrorData select(mapColumn(",
+				"          order_id,",
+				"          payment_id,",
+				"          Status,",
+				"          Total_Invoice,",
+				"          Due_Amount",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectRelevantPaymentsData",
+				"selectRelevantOrderData, selectRelevantCustomersData join(selectRelevantOrderData@customer_id == selectRelevantCustomersData@customer_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinCustomersOrders",
+				"joinCustomersOrders, selectRelevantPaymentsData join(selectRelevantOrderData@order_id == selectRelevantPaymentsData@order_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> joinCustomersOrdersPayments",
+				"joinCustomersOrdersPayments select(mapColumn(",
+				"          customer_id = selectRelevantOrderData@customer_id,",
+				"          Date,",
+				"          Customers_First_Name,",
+				"          Customers_Last_Name,",
+				"          Customers_Country,",
+				"          Customers_Age,",
+				"          Status,",
+				"          Total_Invoice,",
+				"          Due_Amount",
+				"     ),",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> selectPaymentDetails",
+				"selectPaymentDetails pivot(groupBy(customer_id,",
+				"          Date,",
+				"          Customers_First_Name,",
+				"          Customers_Last_Name,",
+				"          Customers_Country,",
+				"          Customers_Age,",
+				"          Status,",
+				"          Total_Invoice),",
+				"     pivotBy(Status, ['received', 'not received']),",
+				"     Due_Amount_ = sum(Due_Amount),",
+				"     columnNaming: '$N$V',",
+				"     lateral: true) ~> pivotDueAmount",
+				"pivotDueAmount sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['PaymentDetails.csv'],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          customer_id,",
+				"          Date,",
+				"          Customers_First_Name,",
+				"          Customers_Last_Name,",
+				"          Customers_Country,",
+				"          Customers_Age,",
+				"          Total_Invoice,",
+				"          Due_Amount_received,",
+				"          {Due_Amount_not received}",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> sinkPaymentDetails"
+			]
+		}
+	}
+}

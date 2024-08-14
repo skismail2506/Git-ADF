@@ -1,0 +1,9 @@
+{
+	"name": "AdfPractice113",
+	"location": "eastus",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "72eaa149-7043-4b46-8eeb-3b6b626b6bc8",
+		"tenantId": "e858f6c8-f477-4d96-b54a-aa77e6948a48"
+	}
+}

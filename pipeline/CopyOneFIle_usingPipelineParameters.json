@@ -1,0 +1,90 @@
+{
+	"name": "CopyOneFIle_usingPipelineParameters",
+	"properties": {
+		"activities": [
+			{
+				"name": "Copy data git to dl",
+				"type": "Copy",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"source": {
+						"type": "DelimitedTextSource",
+						"storeSettings": {
+							"type": "HttpReadSettings",
+							"requestMethod": "GET"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextReadSettings"
+						}
+					},
+					"sink": {
+						"type": "DelimitedTextSink",
+						"storeSettings": {
+							"type": "AzureBlobFSWriteSettings"
+						},
+						"formatSettings": {
+							"type": "DelimitedTextWriteSettings",
+							"quoteAllText": true,
+							"fileExtension": ".txt"
+						}
+					},
+					"enableStaging": false,
+					"translator": {
+						"type": "TabularTranslator",
+						"typeConversion": true,
+						"typeConversionSettings": {
+							"allowDataTruncation": true,
+							"treatBooleanAsNumber": false
+						}
+					}
+				},
+				"inputs": [
+					{
+						"referenceName": "ds_http_git_custCSV",
+						"type": "DatasetReference",
+						"parameters": {
+							"pRelativeGitURL": {
+								"value": "@pipeline().parameters.pRelativeGitURL",
+								"type": "Expression"
+							}
+						}
+					}
+				],
+				"outputs": [
+					{
+						"referenceName": "ds_dl4custCsv",
+						"type": "DatasetReference",
+						"parameters": {
+							"pFilename": {
+								"value": "@pipeline().parameters.pFileName",
+								"type": "Expression"
+							}
+						}
+					}
+				]
+			}
+		],
+		"parameters": {
+			"pRelativeGitURL": {
+				"type": "string"
+			},
+			"pFileName": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "GitDataActivities"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-08-13T19:56:45Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

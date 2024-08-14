@@ -1,0 +1,26 @@
+{
+	"name": "DS_MyPC",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_MyPC_FileServer",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Self IR"
+		},
+		"annotations": [],
+		"type": "DelimitedText",
+		"typeProperties": {
+			"location": {
+				"type": "FileServerLocation",
+				"fileName": "customer.txt"
+			},
+			"columnDelimiter": ",",
+			"escapeChar": "\\",
+			"firstRowAsHeader": true,
+			"quoteChar": "\""
+		},
+		"schema": []
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

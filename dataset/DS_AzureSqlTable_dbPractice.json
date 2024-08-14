@@ -1,0 +1,20 @@
+{
+	"name": "DS_AzureSqlTable_dbPractice",
+	"properties": {
+		"linkedServiceName": {
+			"referenceName": "LS_AzureSqlDatabase",
+			"type": "LinkedServiceReference"
+		},
+		"folder": {
+			"name": "Self IR"
+		},
+		"annotations": [],
+		"type": "AzureSqlTable",
+		"schema": [],
+		"typeProperties": {
+			"schema": "dbo",
+			"table": "tblTableName"
+		}
+	},
+	"type": "Microsoft.DataFactory/factories/datasets"
+}

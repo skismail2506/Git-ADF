@@ -1,0 +1,37 @@
+{
+	"name": "pl_Copy blob using data flows",
+	"properties": {
+		"activities": [
+			{
+				"name": "Raw to Processed",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_Customer copy raw to processed",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "Mapping DF pipelines"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-08-12T17:00:55Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

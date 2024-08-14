@@ -1,0 +1,37 @@
+{
+	"name": "pl_EmployeeSalesDetails",
+	"properties": {
+		"activities": [
+			{
+				"name": "df_EmployeeSalesDetails",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_EmployeeSalesDetails",
+						"type": "DataFlowReference"
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"folder": {
+			"name": "Mapping DF pipelines"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-08-12T22:37:52Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}

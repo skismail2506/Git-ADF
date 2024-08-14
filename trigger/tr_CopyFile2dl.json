@@ -1,0 +1,28 @@
+{
+	"name": "tr_CopyFile2dl",
+	"properties": {
+		"annotations": [],
+		"runtimeState": "Started",
+		"pipelines": [
+			{
+				"pipelineReference": {
+					"referenceName": "CopyOneFIle_usingPipelineParameters",
+					"type": "PipelineReference"
+				},
+				"parameters": {
+					"pRelativeGitURL": "/skismail2506/sample_adf/raw/main/Department.csv",
+					"pFileName": "Department.csv"
+				}
+			}
+		],
+		"type": "ScheduleTrigger",
+		"typeProperties": {
+			"recurrence": {
+				"frequency": "Day",
+				"interval": 1,
+				"startTime": "2024-08-14T01:40:00",
+				"timeZone": "India Standard Time"
+			}
+		}
+	}
+}

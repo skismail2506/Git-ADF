@@ -1,0 +1,55 @@
+{
+	"name": "pl_PaymentDetails",
+	"properties": {
+		"activities": [
+			{
+				"name": "Data flow Payment Details",
+				"type": "ExecuteDataFlow",
+				"dependsOn": [],
+				"policy": {
+					"timeout": "0.12:00:00",
+					"retry": 0,
+					"retryIntervalInSeconds": 30,
+					"secureOutput": false,
+					"secureInput": false
+				},
+				"userProperties": [],
+				"typeProperties": {
+					"dataflow": {
+						"referenceName": "df_PaymentsDetails",
+						"type": "DataFlowReference",
+						"parameters": {
+							"pMaxAge": {
+								"value": "@pipeline().parameters.maxAge",
+								"type": "Expression"
+							},
+							"pMinAge": {
+								"value": "@pipeline().parameters.minAge",
+								"type": "Expression"
+							}
+						}
+					},
+					"compute": {
+						"coreCount": 8,
+						"computeType": "General"
+					},
+					"traceLevel": "Fine"
+				}
+			}
+		],
+		"parameters": {
+			"minAge": {
+				"type": "string"
+			},
+			"maxAge": {
+				"type": "string"
+			}
+		},
+		"folder": {
+			"name": "Mapping DF pipelines"
+		},
+		"annotations": [],
+		"lastPublishTime": "2024-08-12T20:37:55Z"
+	},
+	"type": "Microsoft.DataFactory/factories/pipelines"
+}
